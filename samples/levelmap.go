@@ -1,8 +1,9 @@
 package main
 
 import (
-	tl "github.com/JoelOtter/termloop"
 	"io/ioutil"
+
+	tl "github.com/JoelOtter/termloop"
 )
 
 type Player struct {
@@ -51,7 +52,7 @@ func main() {
 	g := tl.NewGame()
 	g.Screen().SetFps(30)
 	l := tl.NewBaseLevel(tl.Cell{Bg: 76, Fg: 1})
-	lmap, err := ioutil.ReadFile("level.json")
+	lmap, err := ioutil.ReadFile("./level.json")
 	checkErr(err)
 	parsers := make(map[string]tl.EntityParser)
 	parsers["Player"] = parsePlayer

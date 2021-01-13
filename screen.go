@@ -1,11 +1,14 @@
 package termloop
 
-import "github.com/nsf/termbox-go"
+import (
+	"github.com/gdamore/tcell"
+)
 
 // A Screen represents the current state of the display.
 // To draw on the screen, create Drawables and set their positions.
 // Then, add them to the Screen's Level, or to the Screen directly (e.g. a HUD).
 type Screen struct {
+	engine tcell.Screen
 	oldCanvas Canvas
 	canvas    Canvas
 	level     Level
@@ -57,18 +60,18 @@ func (s *Screen) Draw() {
 	if !s.canvas.equals(&s.oldCanvas) {
 		// Draw to terminal
 		if s.pixelMode {
-			termboxPixel(&s.canvas)
+			s.pixel()
 		} else {
-			termboxNormal(&s.canvas)
+			s.normal()
+			s.normal()
 		}
-		termbox.Flush()
+		s.engine.Show()
 	}
 	s.oldCanvas = s.canvas
 }
 
-func (s *Screen) resize(w, h int) {
-	s.width = w
-	s.height = h
+func (s *Screen) resize() {
+	s.width, s.height = s.engine.Size()
 	if s.pixelMode {
 		s.height *= 2
 	}
@@ -163,8 +166,8 @@ func renderCell(old, new_ *Cell) {
 	}
 }
 
-func termboxPixel(canvas *Canvas) {
-	for i, col := range *canvas {
+func (s *Screen) pixel() {
+	for i, col := range s.canvas	 {
 		for j := 0; j < len(col); j += 2 {
 			cellBack := col[j]
 			cellFront := col[j+1]
@@ -173,19 +176,31 @@ func termboxPixel(canvas *Canvas) {
 			if cellFront.Bg == 0 {
 				char = 0
 			}
-			termbox.SetCell(i, termj, char,
-				termbox.Attribute(cellFront.Bg),
-				termbox.Attribute(cellBack.Bg))
+			s.engine.SetContent(i, termj,char,nil, mkStyle(cellFront.Fg, cellBack.Bg))
 		}
 	}
 }
 
-func termboxNormal(canvas *Canvas) {
-	for i, col := range *canvas {
+func mkStyle(fg, bg Attr) tcell.Style {
+	st := tcell.StyleDefault
+
+	st = st.Foreground(tcell.Color(fg)).Background(tcell.Color(bg))
+	if (fg|bg)&AttrBold != 0 {
+		st = st.Bold(true)
+	}
+	if (fg|bg)&AttrUnderline != 0 {
+		st = st.Underline(true)
+	}
+	if (fg|bg)&AttrReverse != 0 {
+		st = st.Reverse(true)
+	}
+	return st
+}
+
+func (s *Screen) normal() {
+	for i, col := range s.canvas {
 		for j, cell := range col {
-			termbox.SetCell(i, j, cell.Ch,
-				termbox.Attribute(cell.Fg),
-				termbox.Attribute(cell.Bg))
+			s.engine.SetContent(i, j,cell.Ch,nil, mkStyle(cell.Fg, cell.Bg))
 		}
 	}
 

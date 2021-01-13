@@ -1,6 +1,6 @@
 package main
 
-import tl "github.com/JoelOtter/termloop"
+import tl "github.com/snakeice/termloop"
 
 type Player struct {
 	*tl.Entity
@@ -34,7 +34,8 @@ func (player *Player) Tick(event tl.Event) {
 
 func (player *Player) Collide(collision tl.Physical) {
 	// Check if it's a Rectangle we're colliding with
-	if _, ok := collision.(*tl.Rectangle); ok {
+	if x, ok := collision.(*tl.Rectangle); ok {
+		x.SetColor(tl.ColorYellow)
 		player.SetPosition(player.prevX, player.prevY)
 	}
 }

@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	tl "github.com/JoelOtter/termloop"
+
+	tl "github.com/snakeice/termloop"
 )
 
 type EventInfo struct {
@@ -32,7 +33,8 @@ func (info *EventInfo) Tick(ev tl.Event) {
 	case tl.MouseRelease:
 		name = "Mouse Release"
 	default:
-		name = fmt.Sprintf("Unknown Key (%#x)", ev.Key)
+		return
+		//name = fmt.Sprintf("Unknown Key (%#x)", ev.Key)
 	}
 	info.SetText(fmt.Sprintf("%s @ [%d, %d]", name, ev.MouseX, ev.MouseY))
 }

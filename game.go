@@ -2,7 +2,7 @@ package termloop
 
 import (
 	"fmt"
-	"github.com/nsf/termbox-go"
+	"github.com/gdamore/tcell"
 	"time"
 )
 
@@ -33,7 +33,7 @@ func (g *Game) Screen() *Screen {
 // SetScreen sets the current Screen of a Game.
 func (g *Game) SetScreen(s *Screen) {
 	g.screen = s
-	g.screen.resize(termbox.Size())
+	g.screen.resize()
 }
 
 // DebugOn returns a bool showing whether or not debug mode is on.
@@ -71,25 +71,35 @@ func (g *Game) dumpLogs() {
 // isn't supported and will do nothing.
 // (We recommend always having an end key for development/testing.)
 func (g *Game) SetEndKey(key Key) {
-	g.input.endKey = termbox.Key(key)
+	g.input.endKey = tcell.Key(key)
 }
 
 // Start starts a Game running. This should be the last thing called in your
 // main function. By default, the escape key exits.
 func (g *Game) Start() {
 	// Init Termbox
-	err := termbox.Init()
-	termbox.SetOutputMode(termbox.Output256)
-	termbox.SetInputMode(termbox.InputAlt | termbox.InputMouse)
-	if err != nil {
-		panic(err)
+	if s, err := tcell.NewScreen(); err != nil {
+		if err != nil {
+			panic(err)
+		}
+	} else if err = s.Init(); err != nil {
+		if err != nil {
+			panic(err)
+		}
+	} else {
+
+		g.screen.engine = s
 	}
+
+	//termbox.SetOutputMode(termbox.Output256)
+	//termbox.SetInputMode(termbox.InputAlt | termbox.InputMouse)
+	g.screen.engine.EnableMouse()
 	defer g.dumpLogs()
-	defer termbox.Close()
-	g.screen.resize(termbox.Size())
+	defer g.screen.engine.Fini()
+	g.screen.resize()
 
 	// Init input
-	g.input.start()
+	g.input.start(g.screen.engine)
 	defer g.input.stop()
 	clock := time.Now()
 
@@ -100,19 +110,22 @@ mainloop:
 		clock = update
 
 		select {
-		case ev := <-g.input.eventQ:
-			if ev.Key == g.input.endKey {
-				break mainloop
-			} else if EventType(ev.Type) == EventResize {
-				g.screen.resize(ev.Width, ev.Height)
-			} else if EventType(ev.Type) == EventError {
-				g.Log(ev.Err.Error())
-			}
-			g.screen.Tick(convertEvent(ev))
+		case rawEv := <-g.input.eventQ:
+			switch ev := rawEv.(type) {
+			case *tcell.EventKey:
+				if ev.Key() == g.input.endKey {
+					break mainloop
+				}
+			case *tcell.EventResize:
+				g.screen.resize()
+			case *tcell.EventError:
+				g.Log(ev.Error())
+				}
+			//	TODO: make this!
+			g.screen.Tick(convertEvent(rawEv))
 		default:
 			g.screen.Tick(Event{Type: EventNone})
 		}
-
 		g.screen.Draw()
 		// If g.screen.fps is zero (the default), then 1000.0/g.screen.fps -> +Inf -> time.Duration(+Inf), which
 		// is a negative number, and so time.Sleep returns immediately.

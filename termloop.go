@@ -1,7 +1,7 @@
 package termloop
 
 import (
-	"github.com/nsf/termbox-go"
+	"github.com/gdamore/tcell"
 	"strings"
 )
 
@@ -123,30 +123,36 @@ func (c *Cell) equals(c2 *Cell) bool {
 // Resizing and errors are largely handled by Termloop itself
 // - this would largely be used for input.
 type Event struct {
-	Type   EventType // The type of event
-	Key    Key       // The key pressed, if any
-	Ch     rune      // The character of the key, if any
-	Mod    Modifier  // A keyboard modifier, if any
-	Err    error     // Error, if any
-	MouseX int       // Mouse X coordinate, if any
-	MouseY int       // Mouse Y coordinate, if any
+	Type   EventType     // The type of event
+	Key    Key           // The key pressed, if any
+	Ch     rune          // The character of the key, if any
+	Mod    tcell.ModMask // A keyboard modifier, if any
+	Err    error         // Error, if any
+	MouseX int           // Mouse X coordinate, if any
+	MouseY int           // Mouse Y coordinate, if any
 }
 
-func convertEvent(ev termbox.Event) Event {
-	return Event{
-		Type:   EventType(ev.Type),
-		Key:    Key(ev.Key),
-		Ch:     ev.Ch,
-		Mod:    Modifier(ev.Mod),
-		Err:    ev.Err,
-		MouseX: ev.MouseX,
-		MouseY: ev.MouseY,
+func convertEvent(rawEv interface{}) Event {
+	var result Event
+	switch ev := rawEv.(type) {
+	case *tcell.EventKey:
+		result.Type = EventMouse
+		result.Key = Key(ev.Key())
+		result.Ch = ev.Rune()
+		result.Mod = ev.Modifiers()
+
+	case *tcell.EventMouse:
+		result.Type = EventMouse
+		result.Key = Key(ev.Buttons())
+		result.MouseX, result.MouseY = ev.Position()
+
 	}
+	return result
 }
 
 type (
 	Attr      uint16
-	Key       uint16
+	Key       tcell.Key
 	Modifier  uint8
 	EventType uint8
 )
@@ -165,15 +171,387 @@ const (
 // Cell colors. You can combine these with multiple attributes using
 // a bitwise OR ('|'). Colors can't combine with other colors.
 const (
-	ColorDefault Attr = iota
-	ColorBlack
-	ColorRed
+	ColorBlack Attr = iota
+	ColorMaroon
 	ColorGreen
+	ColorOlive
+	ColorNavy
+	ColorPurple
+	ColorTeal
+	ColorSilver
+	ColorGray
+	ColorRed
+	ColorLime
 	ColorYellow
 	ColorBlue
-	ColorMagenta
-	ColorCyan
+	ColorFuchsia
+	ColorAqua
 	ColorWhite
+	Color16
+	Color17
+	Color18
+	Color19
+	Color20
+	Color21
+	Color22
+	Color23
+	Color24
+	Color25
+	Color26
+	Color27
+	Color28
+	Color29
+	Color30
+	Color31
+	Color32
+	Color33
+	Color34
+	Color35
+	Color36
+	Color37
+	Color38
+	Color39
+	Color40
+	Color41
+	Color42
+	Color43
+	Color44
+	Color45
+	Color46
+	Color47
+	Color48
+	Color49
+	Color50
+	Color51
+	Color52
+	Color53
+	Color54
+	Color55
+	Color56
+	Color57
+	Color58
+	Color59
+	Color60
+	Color61
+	Color62
+	Color63
+	Color64
+	Color65
+	Color66
+	Color67
+	Color68
+	Color69
+	Color70
+	Color71
+	Color72
+	Color73
+	Color74
+	Color75
+	Color76
+	Color77
+	Color78
+	Color79
+	Color80
+	Color81
+	Color82
+	Color83
+	Color84
+	Color85
+	Color86
+	Color87
+	Color88
+	Color89
+	Color90
+	Color91
+	Color92
+	Color93
+	Color94
+	Color95
+	Color96
+	Color97
+	Color98
+	Color99
+	Color100
+	Color101
+	Color102
+	Color103
+	Color104
+	Color105
+	Color106
+	Color107
+	Color108
+	Color109
+	Color110
+	Color111
+	Color112
+	Color113
+	Color114
+	Color115
+	Color116
+	Color117
+	Color118
+	Color119
+	Color120
+	Color121
+	Color122
+	Color123
+	Color124
+	Color125
+	Color126
+	Color127
+	Color128
+	Color129
+	Color130
+	Color131
+	Color132
+	Color133
+	Color134
+	Color135
+	Color136
+	Color137
+	Color138
+	Color139
+	Color140
+	Color141
+	Color142
+	Color143
+	Color144
+	Color145
+	Color146
+	Color147
+	Color148
+	Color149
+	Color150
+	Color151
+	Color152
+	Color153
+	Color154
+	Color155
+	Color156
+	Color157
+	Color158
+	Color159
+	Color160
+	Color161
+	Color162
+	Color163
+	Color164
+	Color165
+	Color166
+	Color167
+	Color168
+	Color169
+	Color170
+	Color171
+	Color172
+	Color173
+	Color174
+	Color175
+	Color176
+	Color177
+	Color178
+	Color179
+	Color180
+	Color181
+	Color182
+	Color183
+	Color184
+	Color185
+	Color186
+	Color187
+	Color188
+	Color189
+	Color190
+	Color191
+	Color192
+	Color193
+	Color194
+	Color195
+	Color196
+	Color197
+	Color198
+	Color199
+	Color200
+	Color201
+	Color202
+	Color203
+	Color204
+	Color205
+	Color206
+	Color207
+	Color208
+	Color209
+	Color210
+	Color211
+	Color212
+	Color213
+	Color214
+	Color215
+	Color216
+	Color217
+	Color218
+	Color219
+	Color220
+	Color221
+	Color222
+	Color223
+	Color224
+	Color225
+	Color226
+	Color227
+	Color228
+	Color229
+	Color230
+	Color231
+	Color232
+	Color233
+	Color234
+	Color235
+	Color236
+	Color237
+	Color238
+	Color239
+	Color240
+	Color241
+	Color242
+	Color243
+	Color244
+	Color245
+	Color246
+	Color247
+	Color248
+	Color249
+	Color250
+	Color251
+	Color252
+	Color253
+	Color254
+	Color255
+	ColorAliceBlue
+	ColorAntiqueWhite
+	ColorAquaMarine
+	ColorAzure
+	ColorBeige
+	ColorBisque
+	ColorBlanchedAlmond
+	ColorBlueViolet
+	ColorBrown
+	ColorBurlyWood
+	ColorCadetBlue
+	ColorChartreuse
+	ColorChocolate
+	ColorCoral
+	ColorCornflowerBlue
+	ColorCornsilk
+	ColorCrimson
+	ColorDarkBlue
+	ColorDarkCyan
+	ColorDarkGoldenrod
+	ColorDarkGray
+	ColorDarkGreen
+	ColorDarkKhaki
+	ColorDarkMagenta
+	ColorDarkOliveGreen
+	ColorDarkOrange
+	ColorDarkOrchid
+	ColorDarkRed
+	ColorDarkSalmon
+	ColorDarkSeaGreen
+	ColorDarkSlateBlue
+	ColorDarkSlateGray
+	ColorDarkTurquoise
+	ColorDarkViolet
+	ColorDeepPink
+	ColorDeepSkyBlue
+	ColorDimGray
+	ColorDodgerBlue
+	ColorFireBrick
+	ColorFloralWhite
+	ColorForestGreen
+	ColorGainsboro
+	ColorGhostWhite
+	ColorGold
+	ColorGoldenrod
+	ColorGreenYellow
+	ColorHoneydew
+	ColorHotPink
+	ColorIndianRed
+	ColorIndigo
+	ColorIvory
+	ColorKhaki
+	ColorLavender
+	ColorLavenderBlush
+	ColorLawnGreen
+	ColorLemonChiffon
+	ColorLightBlue
+	ColorLightCoral
+	ColorLightCyan
+	ColorLightGoldenrodYellow
+	ColorLightGray
+	ColorLightGreen
+	ColorLightPink
+	ColorLightSalmon
+	ColorLightSeaGreen
+	ColorLightSkyBlue
+	ColorLightSlateGray
+	ColorLightSteelBlue
+	ColorLightYellow
+	ColorLimeGreen
+	ColorLinen
+	ColorMediumAquamarine
+	ColorMediumBlue
+	ColorMediumOrchid
+	ColorMediumPurple
+	ColorMediumSeaGreen
+	ColorMediumSlateBlue
+	ColorMediumSpringGreen
+	ColorMediumTurquoise
+	ColorMediumVioletRed
+	ColorMidnightBlue
+	ColorMintCream
+	ColorMistyRose
+	ColorMoccasin
+	ColorNavajoWhite
+	ColorOldLace
+	ColorOliveDrab
+	ColorOrange
+	ColorOrangeRed
+	ColorOrchid
+	ColorPaleGoldenrod
+	ColorPaleGreen
+	ColorPaleTurquoise
+	ColorPaleVioletRed
+	ColorPapayaWhip
+	ColorPeachPuff
+	ColorPeru
+	ColorPink
+	ColorPlum
+	ColorPowderBlue
+	ColorRebeccaPurple
+	ColorRosyBrown
+	ColorRoyalBlue
+	ColorSaddleBrown
+	ColorSalmon
+	ColorSandyBrown
+	ColorSeaGreen
+	ColorSeashell
+	ColorSienna
+	ColorSkyblue
+	ColorSlateBlue
+	ColorSlateGray
+	ColorSnow
+	ColorSpringGreen
+	ColorSteelBlue
+	ColorTan
+	ColorThistle
+	ColorTomato
+	ColorTurquoise
+	ColorViolet
+	ColorWheat
+	ColorWhiteSmoke
+	ColorYellowGreen
+
+	ColorDefault = ColorBlack
 )
 
 // Cell attributes. These can be combined with OR.
@@ -185,9 +563,118 @@ const (
 
 const ModAltModifier = 0x01
 
-// Key constants. See Event.Key.
+
+
+
 const (
-	KeyF1 Key = 0xFFFF - iota
+	KeyNUL Key = iota
+	KeySOH
+	KeySTX
+	KeyETX
+	KeyEOT
+	KeyENQ
+	KeyACK
+	KeyBEL
+	KeyBS
+	KeyTAB
+	KeyLF
+	KeyVT
+	KeyFF
+	KeyCR
+	KeySO
+	KeySI
+	KeyDLE
+	KeyDC1
+	KeyDC2
+	KeyDC3
+	KeyDC4
+	KeyNAK
+	KeySYN
+	KeyETB
+	KeyCAN
+	KeyEM
+	KeySUB
+	KeyESC
+	KeyFS
+	KeyGS
+	KeyRS
+	KeyUS
+	KeyDEL Key = 0x7F
+)
+
+// These keys are aliases for other names.
+const (
+	KeyBackspace  = KeyBS
+	KeyTab        = KeyTAB
+	KeyEsc        = KeyESC
+	KeyEscape     = KeyESC
+	KeyEnter      = KeyCR
+	KeyBackspace2 = KeyDEL
+)
+
+
+// These are the control keys.  Note that they overlap with other keys,
+// perhaps.  For example, KeyCtrlH is the same as KeyBackspace.
+const (
+	KeyCtrlSpace Key = iota
+	KeyCtrlA
+	KeyCtrlB
+	KeyCtrlC
+	KeyCtrlD
+	KeyCtrlE
+	KeyCtrlF
+	KeyCtrlG
+	KeyCtrlH
+	KeyCtrlI
+	KeyCtrlJ
+	KeyCtrlK
+	KeyCtrlL
+	KeyCtrlM
+	KeyCtrlN
+	KeyCtrlO
+	KeyCtrlP
+	KeyCtrlQ
+	KeyCtrlR
+	KeyCtrlS
+	KeyCtrlT
+	KeyCtrlU
+	KeyCtrlV
+	KeyCtrlW
+	KeyCtrlX
+	KeyCtrlY
+	KeyCtrlZ
+	KeyCtrlLeftSq // Escape
+	KeyCtrlBackslash
+	KeyCtrlRightSq
+	KeyCtrlCarat
+	KeyCtrlUnderscore
+)
+
+const (
+	KeyRune Key = iota + 256
+	KeyArrowUp
+	KeyArrowDown
+	KeyArrowRight
+	KeyArrowLeft
+	KeyUpLeft
+	KeyUpRight
+	KeyDownLeft
+	KeyDownRight
+	KeyCenter
+	KeyPgUp
+	KeyPgDn
+	KeyHome
+	KeyEnd
+	KeyInsert
+	KeyDelete
+	KeyHelp
+	KeyExit
+	KeyClear
+	KeyCancel
+	KeyPrint
+	KeyPause
+	KeyBacktab
+	KeyF1
 	KeyF2
 	KeyF3
 	KeyF4
@@ -199,70 +686,64 @@ const (
 	KeyF10
 	KeyF11
 	KeyF12
-	KeyInsert
-	KeyDelete
-	KeyHome
-	KeyEnd
-	KeyPgup
-	KeyPgdn
-	KeyArrowUp
-	KeyArrowDown
-	KeyArrowLeft
-	KeyArrowRight
-	key_min
-	MouseLeft
-	MouseMiddle
-	MouseRight
-	MouseRelease
-	MouseWheelUp
-	MouseWheelDown
-)
+	KeyF13
+	KeyF14
+	KeyF15
+	KeyF16
+	KeyF17
+	KeyF18
+	KeyF19
+	KeyF20
+	KeyF21
+	KeyF22
+	KeyF23
+	KeyF24
+	KeyF25
+	KeyF26
+	KeyF27
+	KeyF28
+	KeyF29
+	KeyF30
+	KeyF31
+	KeyF32
+	KeyF33
+	KeyF34
+	KeyF35
+	KeyF36
+	KeyF37
+	KeyF38
+	KeyF39
+	KeyF40
+	KeyF41
+	KeyF42
+	KeyF43
+	KeyF44
+	KeyF45
+	KeyF46
+	KeyF47
+	KeyF48
+	KeyF49
+	KeyF50
+	KeyF51
+	KeyF52
+	KeyF53
+	KeyF54
+	KeyF55
+	KeyF56
+	KeyF57
+	KeyF58
+	KeyF59
+	KeyF60
+	KeyF61
+	KeyF62
+	KeyF63
+	KeyF64
 
-const (
-	KeyCtrlTilde      Key = 0x00
-	KeyCtrl2          Key = 0x00
-	KeyCtrlSpace      Key = 0x00
-	KeyCtrlA          Key = 0x01
-	KeyCtrlB          Key = 0x02
-	KeyCtrlC          Key = 0x03
-	KeyCtrlD          Key = 0x04
-	KeyCtrlE          Key = 0x05
-	KeyCtrlF          Key = 0x06
-	KeyCtrlG          Key = 0x07
-	KeyBackspace      Key = 0x08
-	KeyCtrlH          Key = 0x08
-	KeyTab            Key = 0x09
-	KeyCtrlI          Key = 0x09
-	KeyCtrlJ          Key = 0x0A
-	KeyCtrlK          Key = 0x0B
-	KeyCtrlL          Key = 0x0C
-	KeyEnter          Key = 0x0D
-	KeyCtrlM          Key = 0x0D
-	KeyCtrlN          Key = 0x0E
-	KeyCtrlO          Key = 0x0F
-	KeyCtrlP          Key = 0x10
-	KeyCtrlQ          Key = 0x11
-	KeyCtrlR          Key = 0x12
-	KeyCtrlS          Key = 0x13
-	KeyCtrlT          Key = 0x14
-	KeyCtrlU          Key = 0x15
-	KeyCtrlV          Key = 0x16
-	KeyCtrlW          Key = 0x17
-	KeyCtrlX          Key = 0x18
-	KeyCtrlY          Key = 0x19
-	KeyCtrlZ          Key = 0x1A
-	KeyEsc            Key = 0x1B // No longer supported
-	KeyCtrlLsqBracket Key = 0x1B
-	KeyCtrl3          Key = 0x1B
-	KeyCtrl4          Key = 0x1C
-	KeyCtrlBackslash  Key = 0x1C
-	KeyCtrl5          Key = 0x1D
-	KeyCtrlRsqBracket Key = 0x1D
-	KeyCtrl6          Key = 0x1E
-	KeyCtrl7          Key = 0x1F
-	KeyCtrlSlash      Key = 0x1F
-	KeyCtrlUnderscore Key = 0x1F
-	KeySpace          Key = 0x20
-	KeyBackspace2     Key = 0x7F
-	KeyCtrl8          Key = 0x7F
+
+	MouseLeft         = KeyF63 // arbitrary assignments
+	MouseRight        = KeyF62
+	MouseMiddle       = KeyF61
+	MouseRelease      = KeyF60
+	MouseWheelUp      = KeyF59
+	MouseWheelDown    = KeyF58
 )

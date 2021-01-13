@@ -1,8 +1,9 @@
 package main
 
 import (
-	tl "github.com/JoelOtter/termloop"
 	"io/ioutil"
+
+	tl "github.com/snakeice/termloop"
 )
 
 func check(e error) {

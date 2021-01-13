@@ -1,36 +1,38 @@
 package termloop
 
-import "github.com/nsf/termbox-go"
+import (
+	"github.com/gdamore/tcell"
+)
 
 type input struct {
-	endKey termbox.Key
-	eventQ chan termbox.Event
+	endKey tcell.Key
+	eventQ chan interface{}
 	ctrl   chan bool
 }
 
 func newInput() *input {
-	i := input{eventQ: make(chan termbox.Event),
+	i := input{eventQ: make(chan interface{}),
 		ctrl:   make(chan bool, 2),
-		endKey: termbox.KeyCtrlC}
+		endKey: tcell.KeyCtrlC}
 	return &i
 }
 
-func (i *input) start() {
-	go poll(i)
+func (i *input) start(render tcell.Screen) {
+	go poll(i, render)
 }
 
 func (i *input) stop() {
 	i.ctrl <- true
 }
 
-func poll(i *input) {
+func poll(i *input, render tcell.Screen) {
 loop:
 	for {
 		select {
 		case <-i.ctrl:
 			break loop
 		default:
-			i.eventQ <- termbox.PollEvent()
+			i.eventQ <-  render.PollEvent()
 		}
 	}
 }

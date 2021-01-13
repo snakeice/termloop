@@ -1,10 +1,11 @@
 package main
 
 import (
-	tl "github.com/JoelOtter/termloop"
 	"math/rand"
 	"strconv"
 	"time"
+
+	tl "github.com/snakeice/termloop"
 )
 
 ////////////////////////
